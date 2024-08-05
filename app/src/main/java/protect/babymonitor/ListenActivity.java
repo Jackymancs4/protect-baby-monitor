@@ -19,10 +19,8 @@ package protect.babymonitor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 import android.app.Activity;
-import android.content.Context;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
@@ -68,10 +66,10 @@ public class ListenActivity extends Activity {
 
         audioTrack.play();
 
-        try {
+        try (socket) {
             final byte[] buffer = new byte[byteBufferSize];
 
-            while (socket.isConnected() && read != -1 && Thread.currentThread().isInterrupted() == false) {
+            while (socket.isConnected() && read != -1 && !Thread.currentThread().isInterrupted()) {
                 read = is.read(buffer);
 
                 if (read > 0) {
@@ -80,7 +78,6 @@ public class ListenActivity extends Activity {
             }
         } finally {
             audioTrack.stop();
-            socket.close();
         }
     }
 
@@ -120,13 +117,11 @@ public class ListenActivity extends Activity {
                 try {
                     final Socket socket = new Socket(_address, _port);
                     streamAudio(socket);
-                } catch (UnknownHostException e) {
-                    Log.e(TAG, "Failed to stream audio", e);
                 } catch (IOException e) {
                     Log.e(TAG, "Failed to stream audio", e);
                 }
 
-                if (Thread.currentThread().isInterrupted() == false) {
+                if (!Thread.currentThread().isInterrupted()) {
                     // If this thread has not been interrupted, likely something
                     // bad happened with the connection to the child device. Play
                     // an alert to notify the user that the connection has been

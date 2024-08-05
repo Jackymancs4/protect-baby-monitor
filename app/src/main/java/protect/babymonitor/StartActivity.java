@@ -16,15 +16,20 @@
  */
 package protect.babymonitor;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 
 public class StartActivity extends Activity {
     static final String TAG = "BabyMonitor";
+
+    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,26 +38,48 @@ public class StartActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
 
-        final Button monitorButton = (Button) findViewById(R.id.useChildDevice);
-        monitorButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i(TAG, "Starting up monitor");
+        final Button monitorButton = findViewById(R.id.useChildDevice);
+        monitorButton.setOnClickListener(v -> {
+            Log.i(TAG, "Starting up monitor");
+
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+
+                Log.e(TAG, "Record audio permission not granted");
+
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD_AUDIO_PERMISSION);
+
+                return;
+            }
+
+            Intent i = new Intent(getApplicationContext(), MonitorActivity.class);
+            startActivity(i);
+        });
+
+        final Button connectButton = findViewById(R.id.useParentDevice);
+        connectButton.setOnClickListener(v -> {
+            Log.i(TAG, "Starting connection activity");
+
+            Intent i = new Intent(getApplicationContext(), DiscoverActivity.class);
+            startActivity(i);
+        });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted! You can now start recording audio
+                Log.d(TAG, "Record audio permission granted");
 
                 Intent i = new Intent(getApplicationContext(), MonitorActivity.class);
                 startActivity(i);
-            }
-        });
 
-        final Button connectButton = (Button) findViewById(R.id.useParentDevice);
-        connectButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i(TAG, "Starting connection activity");
-
-                Intent i = new Intent(getApplicationContext(), DiscoverActivity.class);
-                startActivity(i);
+            } else {
+                // Permission denied! Handle this gracefully
+                Log.w(TAG, "Record audio permission denied");
+                // ... inform the user and possibly disable audio recording features ...
             }
-        });
+        }
     }
 }

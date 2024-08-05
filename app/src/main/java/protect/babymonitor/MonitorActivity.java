@@ -21,8 +21,10 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -31,14 +33,16 @@ import android.net.nsd.NsdServiceInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.text.format.Formatter;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.TextView;
 
 public class MonitorActivity extends Activity {
     final String TAG = "BabyMonitor";
+
+    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
 
     NsdManager _nsdManager;
 
@@ -60,6 +64,16 @@ public class MonitorActivity extends Activity {
         final int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
 
         final int bufferSize = AudioRecord.getMinBufferSize(frequency, channelConfiguration, audioEncoding);
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+
+            Log.e(TAG, "Record audio permission not granted");
+
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_RECORD_AUDIO_PERMISSION);
+
+            return;
+        }
+
         final AudioRecord audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,
                 frequency, channelConfiguration,
                 audioEncoding, bufferSize);
@@ -75,12 +89,28 @@ public class MonitorActivity extends Activity {
             socket.setSendBufferSize(byteBufferSize);
             Log.d(TAG, "Socket send buffer size: " + socket.getSendBufferSize());
 
-            while (socket.isConnected() && Thread.currentThread().isInterrupted() == false) {
+            while (socket.isConnected() && !Thread.currentThread().isInterrupted()) {
                 final int read = audioRecord.read(buffer, 0, bufferSize);
                 out.write(buffer, 0, read);
             }
         } finally {
             audioRecord.stop();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_RECORD_AUDIO_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted! You can now start recording audio
+                Log.d(TAG, "Record audio permission granted");
+                // ... start your audio recording logic here ...
+            } else {
+                // Permission denied! Handle this gracefully
+                Log.w(TAG, "Record audio permission denied");
+                // ... inform the user and possibly disable audio recording features ...
+            }
         }
     }
 
@@ -96,7 +126,7 @@ public class MonitorActivity extends Activity {
         _serviceThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                while (Thread.currentThread().isInterrupted() == false) {
+                while (!Thread.currentThread().isInterrupted()) {
                     ServerSocket serverSocket = null;
 
                     try {

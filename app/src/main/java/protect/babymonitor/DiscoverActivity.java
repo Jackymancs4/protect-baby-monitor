@@ -85,7 +85,7 @@ public class DiscoverActivity extends Activity {
                 final String addressString = addressField.getText().toString();
                 final String portString = portField.getText().toString();
 
-                if (addressString.length() == 0) {
+                if (addressString.isEmpty()) {
                     Toast.makeText(DiscoverActivity.this, R.string.invalidAddress, Toast.LENGTH_LONG).show();
                     return;
                 }
@@ -228,7 +228,7 @@ public class DiscoverActivity extends Activity {
 }
 
 class ServiceInfoWrapper {
-    private NsdServiceInfo _info;
+    private final NsdServiceInfo _info;
 
     public ServiceInfoWrapper(NsdServiceInfo info) {
         _info = info;
