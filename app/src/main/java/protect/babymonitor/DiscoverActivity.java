@@ -1,16 +1,16 @@
 /**
  * This file is part of the Protect Baby Monitor.
- *
+ * <p>
  * Protect Baby Monitor is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * Protect Baby Monitor is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with Protect Baby Monitor. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -32,8 +32,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class DiscoverActivity extends Activity
-{
+public class DiscoverActivity extends Activity {
     final String TAG = "BabyMonitor";
 
     NsdManager _nsdManager;
@@ -41,52 +40,43 @@ public class DiscoverActivity extends Activity
     NsdManager.DiscoveryListener _discoveryListener;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "Baby monitor start");
 
-        _nsdManager = (NsdManager)this.getSystemService(Context.NSD_SERVICE);
+        _nsdManager = (NsdManager) this.getSystemService(Context.NSD_SERVICE);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_discover);
 
         final Button discoverChildButton = (Button) findViewById(R.id.discoverChildButton);
-        discoverChildButton.setOnClickListener(new View.OnClickListener()
-        {
+        discoverChildButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 loadDiscoveryViaMdns();
             }
         });
 
         final Button enterChildAddressButton = (Button) findViewById(R.id.enterChildAddressButton);
-        enterChildAddressButton.setOnClickListener(new View.OnClickListener()
-        {
+        enterChildAddressButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 loadDiscoveryViaAddress();
             }
         });
     }
 
-    private void loadDiscoveryViaMdns()
-    {
+    private void loadDiscoveryViaMdns() {
         setContentView(R.layout.activity_discover_mdns);
         startServiceDiscovery("_babymonitor._tcp.");
     }
 
-    private void loadDiscoveryViaAddress()
-    {
+    private void loadDiscoveryViaAddress() {
         setContentView(R.layout.activity_discover_address);
 
         final Button connectButton = (Button) findViewById(R.id.connectViaAddressButton);
-        connectButton.setOnClickListener(new View.OnClickListener()
-        {
+        connectButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 Log.i(TAG, "Connecting to child device via address");
 
                 final EditText addressField = (EditText) findViewById(R.id.ipAddressField);
@@ -95,20 +85,16 @@ public class DiscoverActivity extends Activity
                 final String addressString = addressField.getText().toString();
                 final String portString = portField.getText().toString();
 
-                if(addressString.length() == 0)
-                {
+                if (addressString.length() == 0) {
                     Toast.makeText(DiscoverActivity.this, R.string.invalidAddress, Toast.LENGTH_LONG).show();
                     return;
                 }
 
                 int port = 0;
 
-                try
-                {
+                try {
                     port = Integer.parseInt(portString);
-                }
-                catch(NumberFormatException e)
-                {
+                } catch (NumberFormatException e) {
                     Toast.makeText(DiscoverActivity.this, R.string.invalidPort, Toast.LENGTH_LONG).show();
                     return;
                 }
@@ -119,12 +105,10 @@ public class DiscoverActivity extends Activity
     }
 
     @Override
-    protected void onDestroy()
-    {
+    protected void onDestroy() {
         Log.i(TAG, "Baby monitoring stop");
 
-        if(_discoveryListener != null)
-        {
+        if (_discoveryListener != null) {
             Log.i(TAG, "Unregistering monitoring service");
 
             _nsdManager.stopServiceDiscovery(_discoveryListener);
@@ -134,9 +118,8 @@ public class DiscoverActivity extends Activity
         super.onDestroy();
     }
 
-    public void startServiceDiscovery(final String serviceType)
-    {
-        final NsdManager nsdManager = (NsdManager)this.getSystemService(Context.NSD_SERVICE);
+    public void startServiceDiscovery(final String serviceType) {
+        final NsdManager nsdManager = (NsdManager) this.getSystemService(Context.NSD_SERVICE);
 
         final ListView serviceTable = (ListView) findViewById(R.id.ServiceTable);
 
@@ -144,24 +127,20 @@ public class DiscoverActivity extends Activity
                 R.layout.available_children_list);
         serviceTable.setAdapter(availableServicesAdapter);
 
-        serviceTable.setOnItemClickListener(new OnItemClickListener()
-        {
+        serviceTable.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
-                    int position, long id)
-            {
+                                    int position, long id) {
                 final ServiceInfoWrapper info = (ServiceInfoWrapper) parent.getItemAtPosition(position);
                 connectToChild(info.getAddress(), info.getPort(), info.getName());
             }
         });
 
         // Instantiate a new DiscoveryListener
-        _discoveryListener = new NsdManager.DiscoveryListener()
-        {
+        _discoveryListener = new NsdManager.DiscoveryListener() {
             //  Called as soon as service discovery begins.
             @Override
-            public void onDiscoveryStarted(String regType)
-            {
+            public void onDiscoveryStarted(String regType) {
                 Log.d(TAG, "Service discovery started");
             }
 
@@ -170,33 +149,25 @@ public class DiscoverActivity extends Activity
                 // A service was found!  Do something with it.
                 Log.d(TAG, "Service discovery success: " + service);
 
-                if (!service.getServiceType().equals(serviceType))
-                {
+                if (!service.getServiceType().equals(serviceType)) {
                     // Service type is the string containing the protocol and
                     // transport layer for this service.
                     Log.d(TAG, "Unknown Service Type: " + service.getServiceType());
-                }
-                else if (service.getServiceName().contains("ProtectBabyMonitor"))
-                {
-                    NsdManager.ResolveListener resolver = new NsdManager.ResolveListener()
-                    {
+                } else if (service.getServiceName().contains("ProtectBabyMonitor")) {
+                    NsdManager.ResolveListener resolver = new NsdManager.ResolveListener() {
                         @Override
-                        public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode)
-                        {
+                        public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
                             // Called when the resolve fails.  Use the error code to debug.
                             Log.e(TAG, "Resolve failed: error " + errorCode + " for service: " + serviceInfo);
                         }
 
                         @Override
-                        public void onServiceResolved(final NsdServiceInfo serviceInfo)
-                        {
+                        public void onServiceResolved(final NsdServiceInfo serviceInfo) {
                             Log.i(TAG, "Resolve Succeeded: " + serviceInfo);
 
-                            DiscoverActivity.this.runOnUiThread(new Runnable()
-                            {
+                            DiscoverActivity.this.runOnUiThread(new Runnable() {
                                 @Override
-                                public void run()
-                                {
+                                public void run() {
                                     availableServicesAdapter.add(new ServiceInfoWrapper(serviceInfo));
                                 }
                             });
@@ -204,37 +175,31 @@ public class DiscoverActivity extends Activity
                     };
 
                     _nsdManager.resolveService(service, resolver);
-                }
-                else
-                {
+                } else {
                     Log.d(TAG, "Unknown Service name: " + service.getServiceName());
                 }
             }
 
             @Override
-            public void onServiceLost(NsdServiceInfo service)
-            {
+            public void onServiceLost(NsdServiceInfo service) {
                 // When the network service is no longer available.
                 // Internal bookkeeping code goes here.
                 Log.e(TAG, "Service lost: " + service);
             }
 
             @Override
-            public void onDiscoveryStopped(String serviceType)
-            {
+            public void onDiscoveryStopped(String serviceType) {
                 Log.i(TAG, "Discovery stopped: " + serviceType);
             }
 
             @Override
-            public void onStartDiscoveryFailed(String serviceType, int errorCode)
-            {
+            public void onStartDiscoveryFailed(String serviceType, int errorCode) {
                 Log.e(TAG, "Discovery failed: Error code: " + errorCode);
                 nsdManager.stopServiceDiscovery(this);
             }
 
             @Override
-            public void onStopDiscoveryFailed(String serviceType, int errorCode)
-            {
+            public void onStopDiscoveryFailed(String serviceType, int errorCode) {
                 Log.e(TAG, "Discovery failed: Error code: " + errorCode);
                 nsdManager.stopServiceDiscovery(this);
             }
@@ -251,8 +216,7 @@ public class DiscoverActivity extends Activity
      * @param port
      * @param name
      */
-    private void connectToChild(final String address, final int port, final String name)
-    {
+    private void connectToChild(final String address, final int port, final String name) {
         final Intent i = new Intent(getApplicationContext(), ListenActivity.class);
         final Bundle b = new Bundle();
         b.putString("address", address);
@@ -263,26 +227,22 @@ public class DiscoverActivity extends Activity
     }
 }
 
-class ServiceInfoWrapper
-{
+class ServiceInfoWrapper {
     private NsdServiceInfo _info;
-    public ServiceInfoWrapper(NsdServiceInfo info)
-    {
+
+    public ServiceInfoWrapper(NsdServiceInfo info) {
         _info = info;
     }
 
-    public String getAddress()
-    {
+    public String getAddress() {
         return _info.getHost().getHostAddress();
     }
 
-    public int getPort()
-    {
+    public int getPort() {
         return _info.getPort();
     }
 
-    public String getName()
-    {
+    public String getName() {
         // If there is more than one service on the network, it will
         // have a number at the end, but will appear as the following:
         //   "ProtectBabyMonitor\\032(number)
@@ -296,8 +256,7 @@ class ServiceInfoWrapper
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return getName();
     }
 }

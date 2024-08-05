@@ -1,26 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="protect.babymonitor"
-    android:versionCode="2"
-    android:versionName="0.2" >
+    xmlns:dist="http://schemas.android.com/apk/distribution"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-sdk
-        android:minSdkVersion="16"
-        android:targetSdkVersion="17" />
-    <uses-permission android:required="true" android:name="android.permission.INTERNET"/>
-    <uses-permission android:required="true" android:name="android.permission.RECORD_AUDIO"/>
-    <uses-permission android:required="true" android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission
+        android:name="android.permission.INTERNET"
+        android:required="true" />
+    <uses-permission
+        android:name="android.permission.RECORD_AUDIO"
+        android:required="true" />
+    <uses-permission
+        android:name="android.permission.ACCESS_WIFI_STATE"
+        android:required="true" />
 
     <application
+        android:name="protect.babymonitor.BaseApp"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@android:style/Theme.Holo" >
+        android:theme="@android:style/Theme.Holo">
         <activity
             android:name="protect.babymonitor.StartActivity"
-            android:label="@string/app_name"
             android:configChanges="orientation|screenSize"
-            >
+            android:exported="true"
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -28,23 +31,20 @@
         </activity>
         <activity
             android:name="protect.babymonitor.MonitorActivity"
-            android:label="@string/app_name"
             android:configChanges="orientation|screenSize"
-            android:parentActivityName="protect.babymonitor.StartActivity"
-            />
+            android:label="@string/app_name"
+            android:parentActivityName="protect.babymonitor.StartActivity" />
         <activity
             android:name="protect.babymonitor.DiscoverActivity"
-            android:label="@string/app_name"
             android:configChanges="orientation|screenSize"
-            android:windowSoftInputMode="adjustPan"
+            android:label="@string/app_name"
             android:parentActivityName="protect.babymonitor.StartActivity"
-            />
+            android:windowSoftInputMode="adjustPan" />
         <activity
             android:name="protect.babymonitor.ListenActivity"
-            android:label="@string/app_name"
             android:configChanges="orientation|screenSize"
-            android:parentActivityName="protect.babymonitor.DiscoverActivity"
-            />
+            android:label="@string/app_name"
+            android:parentActivityName="protect.babymonitor.DiscoverActivity" />
     </application>
 
 </manifest>

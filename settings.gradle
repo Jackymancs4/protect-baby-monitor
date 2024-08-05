@@ -1,1 +1,42 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url "https://jitpack.io" }
+    }
+}
+
+Properties properties = new Properties()
+properties.load((new File("local.properties")).newDataInputStream())
+
+buildCache {
+
+    local {
+        enabled = !properties.getProperty('isCiServer')
+    }
+
+    remote(HttpBuildCache) {
+        enabled = properties.getProperty('isCiServer')
+
+        url = "${properties.getProperty('cacheUrl')}"
+        credentials {
+            username = "${properties.getProperty('cacheUsername')}"
+            password = "${properties.getProperty('cachePassword')}"
+        }
+
+        push = properties.getProperty('isCiServer')
+        allowInsecureProtocol = true
+    }
+}
+
+rootProject.name = "Protect Baby Monitor"
 include ':app'

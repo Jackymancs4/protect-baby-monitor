@@ -1,20 +1,34 @@
-apply plugin: 'com.android.application'
-apply plugin: 'findbugs'
-
-findbugs {
-    sourceSets = []
-    ignoreFailures = false
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
 }
 
 android {
-    compileSdkVersion 25
+    namespace 'protect.babymonitor'
+
+    compileSdk 34
 
     defaultConfig {
+
+        minSdkVersion 23
+        targetSdkVersion 34
+
         applicationId "protect.babymonitor"
-        minSdkVersion 16
-        targetSdkVersion 17
         versionCode 3
         versionName "0.3"
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17
+        freeCompilerArgs += [
+                "-Xjvm-default=all",
+        ]
+    }
+
+    compileOptions {
+        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_17
     }
 
     buildTypes {
@@ -25,25 +39,6 @@ android {
     }
 
     dependencies {
-        compile "com.android.support:support-compat:25.4.0"
-    }
-}
-
-task findbugs(type: FindBugs, dependsOn: 'assembleDebug') {
-
-    description 'Run findbugs'
-    group 'verification'
-
-    classes = fileTree('build/intermediates/classes/debug/')
-    source = fileTree('src/main/java')
-    classpath = files()
-
-    effort = 'max'
-
-    excludeFilter = file("./config/findbugs/exclude.xml")
-
-    reports {
-        xml.enabled = false
-        html.enabled = true
+        implementation "com.android.support:support-compat:25.4.0"
     }
 }
