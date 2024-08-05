@@ -24,8 +24,6 @@ import android.net.nsd.NsdServiceInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -34,6 +32,8 @@ import android.widget.Toast;
 
 public class DiscoverActivity extends Activity {
     final String TAG = "BabyMonitor";
+
+    private static final int DEFAULT_FREQUENCY = 11025;
 
     NsdManager _nsdManager;
 
@@ -99,7 +99,7 @@ public class DiscoverActivity extends Activity {
                     return;
                 }
 
-                connectToChild(addressString, port, addressString);
+                connectToChild(addressString, port, addressString, DEFAULT_FREQUENCY);
             }
         });
     }
@@ -121,19 +121,16 @@ public class DiscoverActivity extends Activity {
     public void startServiceDiscovery(final String serviceType) {
         final NsdManager nsdManager = (NsdManager) this.getSystemService(Context.NSD_SERVICE);
 
-        final ListView serviceTable = (ListView) findViewById(R.id.ServiceTable);
+        final ListView serviceTable = findViewById(R.id.ServiceTable);
 
-        final ArrayAdapter<ServiceInfoWrapper> availableServicesAdapter = new ArrayAdapter<ServiceInfoWrapper>(this,
+        final ArrayAdapter<ServiceInfoWrapperr> availableServicesAdapter = new ArrayAdapter<>(this,
                 R.layout.available_children_list);
+
         serviceTable.setAdapter(availableServicesAdapter);
 
-        serviceTable.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id) {
-                final ServiceInfoWrapper info = (ServiceInfoWrapper) parent.getItemAtPosition(position);
-                connectToChild(info.getAddress(), info.getPort(), info.getName());
-            }
+        serviceTable.setOnItemClickListener((parent, view, position, id) -> {
+            final ServiceInfoWrapperr info = (ServiceInfoWrapperr) parent.getItemAtPosition(position);
+            connectToChild(info.getAddress(), info.getPort(), info.getName(), info.getFrequency());
         });
 
         // Instantiate a new DiscoveryListener
@@ -165,12 +162,7 @@ public class DiscoverActivity extends Activity {
                         public void onServiceResolved(final NsdServiceInfo serviceInfo) {
                             Log.i(TAG, "Resolve Succeeded: " + serviceInfo);
 
-                            DiscoverActivity.this.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    availableServicesAdapter.add(new ServiceInfoWrapper(serviceInfo));
-                                }
-                            });
+                            DiscoverActivity.this.runOnUiThread(() -> availableServicesAdapter.add(new ServiceInfoWrapperr(serviceInfo)));
                         }
                     };
 
@@ -216,47 +208,16 @@ public class DiscoverActivity extends Activity {
      * @param port
      * @param name
      */
-    private void connectToChild(final String address, final int port, final String name) {
+    private void connectToChild(final String address, final int port, final String name, final int frequency) {
         final Intent i = new Intent(getApplicationContext(), ListenActivity.class);
         final Bundle b = new Bundle();
         b.putString("address", address);
         b.putInt("port", port);
         b.putString("name", name);
+        b.putInt("frequency", frequency);
+
         i.putExtras(b);
         startActivity(i);
     }
 }
 
-class ServiceInfoWrapper {
-    private final NsdServiceInfo _info;
-
-    public ServiceInfoWrapper(NsdServiceInfo info) {
-        _info = info;
-    }
-
-    public String getAddress() {
-        return _info.getHost().getHostAddress();
-    }
-
-    public int getPort() {
-        return _info.getPort();
-    }
-
-    public String getName() {
-        // If there is more than one service on the network, it will
-        // have a number at the end, but will appear as the following:
-        //   "ProtectBabyMonitor\\032(number)
-        // or
-        //   "ProtectBabyMonitor\032(number)
-        // Replace \\032 and \032 with a " "
-        String serviceName = _info.getServiceName();
-        serviceName = serviceName.replace("\\\\032", " ");
-        serviceName = serviceName.replace("\\032", " ");
-        return serviceName;
-    }
-
-    @Override
-    public String toString() {
-        return getName();
-    }
-}

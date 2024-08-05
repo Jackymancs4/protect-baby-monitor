@@ -36,6 +36,8 @@ public class ListenActivity extends Activity {
     // Sets an ID for the notification
     final static int mNotificationId = 1;
 
+    private static final int DEFAULT_FREQUENCY = 11025;
+
     String _address;
     int _port;
     String _name;
@@ -46,7 +48,7 @@ public class ListenActivity extends Activity {
     private void streamAudio(final Socket socket) throws IllegalArgumentException, IllegalStateException, IOException {
         Log.i(TAG, "Setting up stream");
 
-        final int frequency = 11025;
+        final int frequency = DEFAULT_FREQUENCY;
         final int channelConfiguration = AudioFormat.CHANNEL_OUT_MONO;
         final int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
         final int bufferSize = AudioTrack.getMinBufferSize(frequency, channelConfiguration, audioEncoding);

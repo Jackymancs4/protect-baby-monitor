@@ -44,6 +44,8 @@ public class MonitorActivity extends Activity {
 
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
 
+    private static final int DEFAULT_FREQUENCY = 11025;
+
     NsdManager _nsdManager;
 
     NsdManager.RegistrationListener _registrationListener;
@@ -59,7 +61,7 @@ public class MonitorActivity extends Activity {
             }
         });
 
-        final int frequency = 11025;
+        final int frequency = DEFAULT_FREQUENCY;
         final int channelConfiguration = AudioFormat.CHANNEL_IN_MONO;
         final int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
 
@@ -210,6 +212,7 @@ public class MonitorActivity extends Activity {
         serviceInfo.setServiceName("ProtectBabyMonitor");
         serviceInfo.setServiceType("_babymonitor._tcp.");
         serviceInfo.setPort(port);
+        serviceInfo.setAttribute("_babymonitor.frequency", String.valueOf(DEFAULT_FREQUENCY));
 
         _registrationListener = new NsdManager.RegistrationListener() {
             @Override
